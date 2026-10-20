@@ -1,0 +1,26 @@
+{
+  "name": "trade-world",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Trade World — custom T-shirt printing store, Jodhpur. Orders go straight to WhatsApp.",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch-path=server server/index.js",
+    "build": "vite build",
+    "start": "node server/index.js --prod"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0",
+    "three": "^0.170.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}
