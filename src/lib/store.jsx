@@ -17,6 +17,7 @@ export function StoreProvider({ children }) {
   const [settings, setSettings] = useState({ whatsapp: "", announcement: "", address: "Jodhpur, Rajasthan" });
   const [cart, setCart] = useState(loadCart);
   const [toast, setToast] = useState(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     api("/settings").then(setSettings).catch(() => {});
@@ -57,7 +58,7 @@ export function StoreProvider({ children }) {
         },
       ];
     });
-    setToast(`Added to bag — ${product.name}`);
+    setDrawerOpen(true);
   }, []);
 
   const updateQty = useCallback(
@@ -80,8 +81,10 @@ export function StoreProvider({ children }) {
       clearCart,
       toast,
       setToast,
+      drawerOpen,
+      setDrawerOpen,
     }),
-    [settings, cart, addToCart, updateQty, removeItem, clearCart, toast]
+    [settings, cart, addToCart, updateQty, removeItem, clearCart, toast, drawerOpen]
   );
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

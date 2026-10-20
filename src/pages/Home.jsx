@@ -6,6 +6,7 @@ import { Reels, Reviews, TrustStrip } from "../components/Showcase.jsx";
 import { ArrowIcon, SparkIcon, WhatsAppIcon } from "../components/Icons.jsx";
 import { CATEGORIES } from "../lib/api.js";
 import { useProducts, useStore } from "../lib/store.jsx";
+import usePageTitle from "../lib/usePageTitle.js";
 import { openWhatsApp, quickMessage } from "../lib/whatsapp.js";
 
 const Hero3D = lazy(() => import("../components/Hero3D.jsx"));
@@ -69,6 +70,7 @@ function LogoFallback() {
 
 export default function Home() {
   const { settings } = useStore();
+  usePageTitle("");
   const { products, loading } = useProducts();
   const featured = products.filter((p) => p.featured).slice(0, 8);
   const list = featured.length ? featured : products.slice(0, 8);

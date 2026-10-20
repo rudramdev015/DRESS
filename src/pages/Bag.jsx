@@ -4,6 +4,7 @@ import TeeMockup from "../components/TeeMockup.jsx";
 import { TrashIcon, WhatsAppIcon } from "../components/Icons.jsx";
 import { formatINR } from "../lib/api.js";
 import { useStore } from "../lib/store.jsx";
+import usePageTitle from "../lib/usePageTitle.js";
 import { cartMessage, openWhatsApp } from "../lib/whatsapp.js";
 
 export default function Bag() {
@@ -11,6 +12,7 @@ export default function Bag() {
   const [customer, setCustomer] = useState({ name: "", city: "Jodhpur", address: "", note: "" });
   const [error, setError] = useState("");
   const set = (k) => (e) => setCustomer((c) => ({ ...c, [k]: e.target.value }));
+  usePageTitle("Your bag");
 
   if (!cart.length)
     return (

@@ -36,6 +36,32 @@ function frontTexture(img) {
   return t;
 }
 
+// Product print text (used on product pages), readable on light and dark tees.
+function graphicTexture(text) {
+  const c = document.createElement("canvas");
+  c.width = c.height = 1024;
+  const g = c.getContext("2d");
+  g.textAlign = "center";
+  g.lineJoin = "round";
+  const size = Math.min(230, 1500 / Math.max(4, text.length));
+  g.font = size + "px Anton, Impact, sans-serif";
+  g.lineWidth = size * 0.12;
+  g.strokeStyle = "rgba(10, 8, 6, 0.85)";
+  g.fillStyle = "#f6ead9";
+  g.strokeText(text, 512, 560, 900);
+  g.fillText(text, 512, 560, 900);
+  g.fillStyle = "#e8b07f";
+  g.fillRect(432, 610, 160, 8);
+  g.font = '600 44px "Space Grotesk", sans-serif';
+  g.strokeText("J O D H P U R", 512, 690);
+  g.fillStyle = "#f6ead9";
+  g.fillText("J O D H P U R", 512, 690);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+
 function backTexture() {
   const c = document.createElement("canvas");
   c.width = c.height = 1024;
@@ -60,7 +86,7 @@ function backTexture() {
   return t;
 }
 
-export default function Hero3D({ color = "#121212", onFail }) {
+export default function Hero3D({ color = "#121212", graphic = "", onFail }) {
   const mountRef = useRef(null);
   const targetColor = useRef(new THREE.Color(color));
 
@@ -142,13 +168,24 @@ export default function Hero3D({ color = "#121212", onFail }) {
     back.rotation.y = Math.PI;
     group.add(back);
 
-    const img = new Image();
-    img.onload = () => {
-      frontMat.map = frontTexture(img);
-      frontMat.opacity = 1;
-      frontMat.needsUpdate = true;
-    };
-    img.src = "/logo.jpg";
+    if (graphic) {
+      document.fonts
+        .load("230px Anton")
+        .catch(() => {})
+        .then(() => {
+          frontMat.map = graphicTexture(graphic);
+          frontMat.opacity = 1;
+          frontMat.needsUpdate = true;
+        });
+    } else {
+      const img = new Image();
+      img.onload = () => {
+        frontMat.map = frontTexture(img);
+        frontMat.opacity = 1;
+        frontMat.needsUpdate = true;
+      };
+      img.src = "/logo.jpg";
+    }
     Promise.all([
       document.fonts.load('230px "Permanent Marker"'),
       document.fonts.load("120px Anton"),

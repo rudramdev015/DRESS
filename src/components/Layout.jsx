@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useStore } from "../lib/store.jsx";
 import { openWhatsApp, quickMessage } from "../lib/whatsapp.js";
+import CartDrawer from "./CartDrawer.jsx";
 import { BagIcon, CloseIcon, InstagramIcon, MenuIcon, SparkIcon, WhatsAppIcon } from "./Icons.jsx";
 
 const NAV = [
@@ -24,7 +25,7 @@ export function Logo({ small = false }) {
 }
 
 function Navbar() {
-  const { cartCount, settings } = useStore();
+  const { cartCount, settings, setDrawerOpen } = useStore();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { pathname, search } = useLocation();
@@ -60,10 +61,10 @@ function Navbar() {
             <button className="btn btn-wa btn-sm hide-sm" onClick={() => openWhatsApp(settings.whatsapp, quickMessage())}>
               <WhatsAppIcon width={16} height={16} /> Chat
             </button>
-            <Link to="/bag" className="icon-btn" aria-label={`Bag, ${cartCount} items`}>
+            <button className="icon-btn" onClick={() => setDrawerOpen(true)} aria-label={`Bag, ${cartCount} items`}>
               <BagIcon />
-              {cartCount > 0 && <span className="badge">{cartCount}</span>}
-            </Link>
+              {cartCount > 0 && <span key={cartCount} className="badge badge-pop">{cartCount}</span>}
+            </button>
             <button className="icon-btn show-sm" onClick={() => setOpen((o) => !o)} aria-label="Menu">
               {open ? <CloseIcon /> : <MenuIcon />}
             </button>
@@ -144,7 +145,8 @@ export default function Layout() {
         <Outlet />
       </main>
       <Footer />
-      <button className="wa-fab" onClick={() => openWhatsApp(settings.whatsapp, quickMessage())} aria-label="Chat on WhatsApp">
+      <CartDrawer />
+      <button className={`wa-fab ${pathname.startsWith("/product/") ? "wa-fab-raise" : ""}`} onClick={() => openWhatsApp(settings.whatsapp, quickMessage())} aria-label="Chat on WhatsApp">
         <WhatsAppIcon width={28} height={28} />
       </button>
       <div className={`toast ${toast ? "show" : ""}`} role="status">

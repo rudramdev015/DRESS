@@ -1,0 +1,30 @@
+# One-click deploy on Render (https://render.com):
+# New → Blueprint → connect this GitHub repo. Render reads this file.
+# You'll be asked for ADMIN_PASSWORD and WHATSAPP_NUMBER during setup.
+services:
+  - type: web
+    name: trade-world
+    runtime: node
+    plan: starter # a persistent disk (for products & photos) needs a paid plan
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/settings
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: ADMIN_ID
+        value: tradeworld
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: WHATSAPP_NUMBER
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DATA_DIR
+        value: /var/data/data
+      - key: UPLOAD_DIR
+        value: /var/data/uploads
+    disk:
+      name: trade-world-data
+      mountPath: /var/data
+      sizeGB: 1

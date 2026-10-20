@@ -2,6 +2,7 @@ import { useState } from "react";
 import TeeMockup from "../components/TeeMockup.jsx";
 import { WhatsAppIcon } from "../components/Icons.jsx";
 import { useStore } from "../lib/store.jsx";
+import usePageTitle from "../lib/usePageTitle.js";
 import { customMessage, openWhatsApp } from "../lib/whatsapp.js";
 
 const COLORS = [
@@ -15,6 +16,7 @@ const COLORS = [
 
 export default function Custom() {
   const { settings } = useStore();
+  usePageTitle("Custom T-shirt printing");
   const [f, setF] = useState({
     name: "",
     city: "Jodhpur",

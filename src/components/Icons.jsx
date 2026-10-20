@@ -1,7 +1,7 @@
 const base = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round" };
 
 export const BagIcon = (p) => (
-  <svg {...base} {...p}><path d="M6 7h12l-1 13H7L6 7Z" /><path d="M9 7a3 3 0 0 1 6 0" /></svg>
+  <svg {...base} {...p}><path d="M4.5 8.5h15l-1.3 11.2a1.5 1.5 0 0 1-1.5 1.3H7.3a1.5 1.5 0 0 1-1.5-1.3L4.5 8.5Z" /><path d="M8.5 11V7a3.5 3.5 0 0 1 7 0v4" /></svg>
 );
 export const MenuIcon = (p) => (
   <svg {...base} {...p}><path d="M4 7h16M4 12h16M4 17h10" /></svg>

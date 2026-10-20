@@ -11,8 +11,8 @@ import { seedProducts, defaultSettings } from "./seed.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
-const DATA_DIR = path.join(ROOT, "data");
-const UPLOAD_DIR = path.join(ROOT, "uploads");
+const DATA_DIR = process.env.DATA_DIR || path.join(ROOT, "data");
+const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(ROOT, "uploads");
 const DIST_DIR = path.join(ROOT, "dist");
 const PRODUCTS_FILE = path.join(DATA_DIR, "products.json");
 const SETTINGS_FILE = path.join(DATA_DIR, "settings.json");

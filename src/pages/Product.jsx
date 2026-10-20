@@ -1,10 +1,23 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
-import { ProductVisual } from "../components/ProductCard.jsx";
+import { Component, Suspense, lazy, useEffect, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import ProductCard, { ProductVisual } from "../components/ProductCard.jsx";
+import usePageTitle from "../lib/usePageTitle.js";
 import { BagIcon, WhatsAppIcon } from "../components/Icons.jsx";
 import { api, formatINR } from "../lib/api.js";
 import { useStore } from "../lib/store.jsx";
 import { openWhatsApp, productMessage } from "../lib/whatsapp.js";
+
+const Hero3D = lazy(() => import("../components/Hero3D.jsx"));
+
+class Safe3D extends Component {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
 
 const SIZE_CHART = [
   ["S", "38", "27"],
@@ -16,6 +29,8 @@ const SIZE_CHART = [
 
 export default function Product() {
   const { id } = useParams();
+  const [params] = useSearchParams();
+  const start3d = params.get("view") === "3d";
   const { settings, addToCart } = useStore();
   const [product, setProduct] = useState(null);
   const [error, setError] = useState("");
@@ -24,6 +39,9 @@ export default function Product() {
   const [size, setSize] = useState("");
   const [qty, setQty] = useState(1);
   const [warn, setWarn] = useState("");
+  const [view3d, setView3d] = useState(false);
+  const [related, setRelated] = useState([]);
+  usePageTitle(product?.name);
 
   useEffect(() => {
     setProduct(null);
@@ -35,8 +53,17 @@ export default function Product() {
         setSize(p.sizes?.includes("M") ? "M" : p.sizes?.[0] || "");
         setQty(p.category === "Custom" && p.tag === "Bulk" ? 10 : 1);
         setImgIndex(0);
+        setView3d(start3d);
       })
       .catch((e) => setError(e.message));
+    api("/products")
+      .then((all) => {
+        const self = all.find((p) => p.id === id);
+        const same = all.filter((p) => p.id !== id && p.category === self?.category);
+        const rest = all.filter((p) => p.id !== id && p.category !== self?.category);
+        setRelated([...same, ...rest].slice(0, 4));
+      })
+      .catch(() => setRelated([]));
   }, [id]);
 
   if (error)
@@ -79,8 +106,25 @@ export default function Product() {
       <div className="pdp">
         <div className="pdp-gallery">
           <div className="pdp-media">
-            <ProductVisual product={product} colorHex={color?.hex} image={images[imgIndex] ?? null} />
+            {view3d ? (
+              <Safe3D fallback={<ProductVisual product={product} colorHex={color?.hex} image={null} />}>
+                <Suspense fallback={<div className="hero3d hero3d-loading" />}>
+                  <Hero3D color={color?.hex || "#141414"} graphic={product.graphic || "TRADE WORLD"} onFail={() => setView3d(false)} />
+                </Suspense>
+              </Safe3D>
+            ) : (
+              <ProductVisual product={product} colorHex={color?.hex} image={images[imgIndex] ?? null} />
+            )}
             {product.tag && <span className="chip chip-tag">{product.tag}</span>}
+            <div className="view-toggle" role="group" aria-label="View">
+              <button className={!view3d ? "active" : ""} onClick={() => setView3d(false)}>
+                {images.length ? "Photos" : "Flat"}
+              </button>
+              <button className={view3d ? "active" : ""} onClick={() => setView3d(true)}>
+                3D view
+              </button>
+            </div>
+            {view3d && <span className="view-hint">Drag to spin · pick a colour</span>}
           </div>
           {images.length > 1 && (
             <div className="thumbs">
@@ -215,6 +259,42 @@ export default function Product() {
           </details>
         </div>
       </div>
+
+      {related.length > 0 && (
+        <div className="related">
+          <div className="section-head">
+            <h2 className="display-sm">
+              You may also <span className="grad-text">like</span>
+            </h2>
+            <Link to="/shop" className="link-arrow">View all</Link>
+          </div>
+          <div className="grid">
+            {related.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {product.inStock && (
+        <div className="buy-bar">
+          <div>
+            <b>{formatINR(product.price * qty)}</b>
+            <span className="muted small">
+              {color?.name} · {size || "pick size"} · Qty {qty}
+            </span>
+          </div>
+          <button className="icon-btn" onClick={() => validate() && addToCart(product, choice)} aria-label="Add to bag">
+            <BagIcon />
+          </button>
+          <button
+            className="btn btn-wa"
+            onClick={() => validate() && openWhatsApp(settings.whatsapp, productMessage(product, choice))}
+          >
+            <WhatsAppIcon width={18} height={18} /> Buy now
+          </button>
+        </div>
+      )}
     </section>
   );
 }

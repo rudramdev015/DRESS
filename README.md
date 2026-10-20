@@ -51,3 +51,12 @@ uploads/       product photos uploaded from admin
 ```
 
 Back up `data/` and `uploads/` — they contain your products.
+
+## Put it online (Render)
+
+1. Create a free account on https://render.com and connect your GitHub.
+2. Click **New → Blueprint**, pick the `DRESS` repo. Render reads `render.yaml`.
+3. Enter your `ADMIN_PASSWORD` and `WHATSAPP_NUMBER` when asked, then deploy.
+4. Your site gets a link like `https://trade-world.onrender.com`. You can connect your own domain in Render settings.
+
+The blueprint uses a small paid plan with a disk, so your products, photos and videos are kept safe between updates.

@@ -4,6 +4,7 @@ import ProductCard from "../components/ProductCard.jsx";
 import { SearchIcon } from "../components/Icons.jsx";
 import { CATEGORIES } from "../lib/api.js";
 import { useProducts } from "../lib/store.jsx";
+import usePageTitle from "../lib/usePageTitle.js";
 
 export default function Shop() {
   const { products, loading, error } = useProducts();
@@ -11,6 +12,7 @@ export default function Shop() {
   const [q, setQ] = useState("");
   const [sort, setSort] = useState("new");
   const cat = params.get("cat") || "All";
+  usePageTitle(cat === "All" ? "Shop all T-shirts" : CATEGORIES.find((c) => c.id === cat)?.label || "Shop");
 
   const list = useMemo(() => {
     const term = q.trim().toLowerCase();
