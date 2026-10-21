@@ -4,7 +4,7 @@ import ProductCard, { ProductVisual } from "../components/ProductCard.jsx";
 import usePageTitle from "../lib/usePageTitle.js";
 import { BagIcon, WhatsAppIcon } from "../components/Icons.jsx";
 import { api, formatINR } from "../lib/api.js";
-import { useStore } from "../lib/store.jsx";
+import { loadProducts, useStore } from "../lib/store.jsx";
 import { openWhatsApp, productMessage } from "../lib/whatsapp.js";
 
 const Hero3D = lazy(() => import("../components/Hero3D.jsx"));
@@ -56,7 +56,7 @@ export default function Product() {
         setView3d(start3d);
       })
       .catch((e) => setError(e.message));
-    api("/products")
+    loadProducts()
       .then((all) => {
         const self = all.find((p) => p.id === id);
         const same = all.filter((p) => p.id !== id && p.category === self?.category);

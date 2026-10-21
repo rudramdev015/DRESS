@@ -11,13 +11,10 @@ import { openWhatsApp, quickMessage } from "../lib/whatsapp.js";
 
 const Hero3D = lazy(() => import("../components/Hero3D.jsx"));
 
+// We print on black and white tees only.
 const HERO_COLORS = [
-  { name: "Midnight", hex: "#141414" },
-  { name: "Blue City", hex: "#1f4fd1" },
-  { name: "Saffron", hex: "#e2621b" },
-  { name: "Rani Pink", hex: "#c2185b" },
-  { name: "Maroon", hex: "#6b1428" },
-  { name: "Teal", hex: "#0e6b5c" },
+  { name: "Black", hex: "#070707" },
+  { name: "White", hex: "#f4f1ea" },
 ];
 
 const MARQUEE = ["Oversized Tees", "Custom Names", "College Fests", "Corporate Bulk", "Event Tees", "Couple Tees", "Gym Crews", "Brand Merch"];
@@ -43,10 +40,10 @@ const FAQ = [
 ];
 
 const BENTO = [
-  { color: "#141414", graphic: "OVERSIZED" },
+  { color: "#111111", graphic: "OVERSIZED" },
   { color: "#f4f1ea", graphic: "CLASSIC" },
-  { color: "#c2185b", graphic: "POLO" },
-  { color: "#1f4fd1", graphic: "YOUR NAME" },
+  { color: "#111111", graphic: "POLO" },
+  { color: "#f4f1ea", graphic: "YOUR NAME" },
 ];
 
 // If WebGL fails for any reason, show the logo card instead of a blank space.
@@ -78,10 +75,21 @@ export default function Home() {
   const [ci, setCi] = useState(0);
   const [auto, setAuto] = useState(true);
   const [webglFailed, setWebglFailed] = useState(false);
+  // Start the 3D only after the page has painted, so text and buttons show instantly.
+  const [show3d, setShow3d] = useState(false);
+  useEffect(() => {
+    const go = () => setShow3d(true);
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(go, { timeout: 1200 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const t = setTimeout(go, 300);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     if (!auto) return undefined;
-    const t = setInterval(() => setCi((i) => (i + 1) % HERO_COLORS.length), 3200);
+    const t = setInterval(() => setCi((i) => (i + 1) % HERO_COLORS.length), 4000);
     return () => clearInterval(t);
   }, [auto]);
 
@@ -132,9 +140,13 @@ export default function Home() {
               <LogoFallback />
             ) : (
               <SafeStage fallback={<LogoFallback />}>
-                <Suspense fallback={<div className="hero3d hero3d-loading" />}>
-                  <Hero3D color={HERO_COLORS[ci].hex} onFail={() => setWebglFailed(true)} />
-                </Suspense>
+                {show3d ? (
+                  <Suspense fallback={<div className="hero3d hero3d-loading" />}>
+                    <Hero3D color={HERO_COLORS[ci].hex} onFail={() => setWebglFailed(true)} />
+                  </Suspense>
+                ) : (
+                  <div className="hero3d hero3d-loading" />
+                )}
               </SafeStage>
             )}
             {!webglFailed && (
@@ -155,7 +167,7 @@ export default function Home() {
                   ))}
                 </div>
                 <span className="stage-hint">
-                  <b>{HERO_COLORS[ci].name}</b> · drag to spin
+                  <b>{HERO_COLORS[ci].name} tee</b> · drag to spin
                 </span>
               </div>
             )}

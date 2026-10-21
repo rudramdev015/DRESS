@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useStore } from "../lib/store.jsx";
 import { openWhatsApp, quickMessage } from "../lib/whatsapp.js";
@@ -142,7 +142,15 @@ export default function Layout() {
     <>
       <Navbar />
       <main>
-        <Outlet />
+        <Suspense
+          fallback={
+            <div className="page-loader" role="status" aria-label="Loading">
+              <span />
+            </div>
+          }
+        >
+          <Outlet />
+        </Suspense>
       </main>
       <Footer />
       <CartDrawer />

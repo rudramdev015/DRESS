@@ -1,6 +1,7 @@
 # Trade World — Custom T-Shirt Printing, Jodhpur
 
 A modern T-shirt store where every order goes straight to your **WhatsApp**.
+We print on **black and white tees only**. The store, admin panel and server all enforce this.
 There is no payment gateway and no database to install. Products and settings are saved in the `data/` folder.
 
 ## Run it
@@ -43,7 +44,8 @@ From the admin panel you can:
 ## Folders
 
 ```
-server/        Express API (products, settings, admin login, image upload)
+server/        BACKEND: Express API (products, settings, admin login, photo/video upload)
+               index.js = the server, seed.js = starter products
 src/           React frontend (pages, components, styles.css)
 public/logo.jpg  Trade World logo
 data/          products.json + settings.json (created on first run)
@@ -51,6 +53,13 @@ uploads/       product photos uploaded from admin
 ```
 
 Back up `data/` and `uploads/` — they contain your products.
+
+## Speed
+
+- Only the home page loads first; other pages and the 3D engine download when needed.
+- Server compresses responses (gzip) and caches data in memory.
+- Built files are cached by browsers for a year; product data for 15 seconds.
+- The 3D tee uses lighter settings on phones and pauses when off-screen.
 
 ## Put it online (Render)
 

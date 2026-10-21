@@ -5,13 +5,10 @@ import { useStore } from "../lib/store.jsx";
 import usePageTitle from "../lib/usePageTitle.js";
 import { customMessage, openWhatsApp } from "../lib/whatsapp.js";
 
+// We print on black and white tees only.
 const COLORS = [
   { name: "Black", hex: "#111111" },
   { name: "White", hex: "#f4f1ea" },
-  { name: "Navy", hex: "#1f3a5f" },
-  { name: "Maroon", hex: "#6b1e2b" },
-  { name: "Olive", hex: "#4b5a3a" },
-  { name: "Sand", hex: "#d9c3a5" },
 ];
 
 export default function Custom() {

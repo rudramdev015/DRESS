@@ -10,6 +10,7 @@
     "start": "node server/index.js --prod"
   },
   "dependencies": {
+    "compression": "^1.8.2",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",

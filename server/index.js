@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import compression from "compression";
 import fs from "node:fs";
 import fsp from "node:fs/promises";
 import path from "node:path";
@@ -29,18 +30,24 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
 /* ───────── JSON file storage ───────── */
 
+// Files are read once and kept in memory; every write updates the memory copy too.
+const cache = new Map();
+
 async function readJson(file, fallback) {
-  try {
-    return JSON.parse(await fsp.readFile(file, "utf8"));
-  } catch (err) {
-    if (err.code !== "ENOENT") throw err;
-    await writeJson(file, fallback);
-    return structuredClone(fallback);
+  if (!cache.has(file)) {
+    try {
+      cache.set(file, JSON.parse(await fsp.readFile(file, "utf8")));
+    } catch (err) {
+      if (err.code !== "ENOENT") throw err;
+      await writeJson(file, fallback);
+    }
   }
+  return structuredClone(cache.get(file));
 }
 
 async function writeJson(file, data) {
   await fsp.writeFile(file, JSON.stringify(data, null, 2), "utf8");
+  cache.set(file, structuredClone(data));
 }
 
 // Serialise writes so two admin saves can't clobber each other.
@@ -62,13 +69,28 @@ const num = (v) => {
   return Number.isFinite(n) && n >= 0 ? Math.round(n) : 0;
 };
 
+// Trade World prints on black and white tees only.
+const BLACK = { name: "Black", hex: "#111111" };
+const WHITE = { name: "White", hex: "#f4f1ea" };
+
+function isLightHex(hex) {
+  if (!/^#[0-9a-f]{6}$/i.test(hex || "")) return false;
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.6;
+}
+
+function toBlackWhite(list) {
+  const out = [];
+  for (const c of Array.isArray(list) ? list : []) {
+    const name = String(c?.name || "").toLowerCase();
+    const pick = name === "white" ? WHITE : name === "black" ? BLACK : isLightHex(c?.hex) ? WHITE : BLACK;
+    if (!out.includes(pick)) out.push(pick);
+  }
+  return out.length ? out.map((c) => ({ ...c })) : [{ ...BLACK }, { ...WHITE }];
+}
+
 function cleanProduct(body) {
-  const colors = Array.isArray(body.colors)
-    ? body.colors
-        .map((c) => ({ name: str(c?.name, 40), hex: /^#[0-9a-f]{6}$/i.test(c?.hex) ? c.hex : "#111111" }))
-        .filter((c) => c.name)
-        .slice(0, 12)
-    : [];
+  const colors = toBlackWhite(body.colors);
   return {
     name: str(body.name, 120),
     category: str(body.category, 40) || "Classic",
@@ -79,7 +101,7 @@ function cleanProduct(body) {
     fabric: str(body.fabric, 80),
     graphic: str(body.graphic, 24).toUpperCase(),
     tag: str(body.tag, 20),
-    colors: colors.length ? colors : [{ name: "Black", hex: "#111111" }],
+    colors,
     sizes: Array.isArray(body.sizes) ? body.sizes.map((s) => str(s, 6)).filter(Boolean).slice(0, 10) : [],
     images: Array.isArray(body.images)
       ? body.images.map((u) => str(u, 300)).filter((u) => u.startsWith("/uploads/") || /^https?:\/\//.test(u)).slice(0, 8)
@@ -147,23 +169,46 @@ async function removeUploads(urls = []) {
 
 /* ───────── app ───────── */
 
+// One-time upgrade: older products may have other colours. We only print black and white now.
+{
+  const products = await getProducts();
+  let changed = 0;
+  for (const p of products) {
+    const bw = toBlackWhite(p.colors);
+    if (JSON.stringify(bw) !== JSON.stringify(p.colors)) {
+      p.colors = bw;
+      changed++;
+    }
+  }
+  if (changed) {
+    await writeJson(PRODUCTS_FILE, products);
+    console.log(`  Converted ${changed} product(s) to black & white tees.`);
+  }
+}
+
 const app = express();
 app.disable("x-powered-by");
+app.use(compression());
 app.use(express.json({ limit: "1mb" }));
-app.use("/uploads", express.static(UPLOAD_DIR, { maxAge: "7d" }));
+app.use("/uploads", express.static(UPLOAD_DIR, { maxAge: "30d", immutable: true })); // file names are unique
 
-// Public
+// Public data can be cached briefly by browsers; admin changes show within ~15 seconds.
+const shortCache = (res) => res.set("Cache-Control", "public, max-age=15, stale-while-revalidate=60");
+
 app.get("/api/products", async (_req, res) => {
+  shortCache(res);
   res.json(await getProducts());
 });
 
 app.get("/api/products/:id", async (req, res) => {
   const product = (await getProducts()).find((p) => p.id === req.params.id);
   if (!product) return res.status(404).json({ message: "Product not found." });
+  shortCache(res);
   res.json(product);
 });
 
 app.get("/api/settings", async (_req, res) => {
+  shortCache(res);
   res.json(await getSettings());
 });
 
@@ -300,8 +345,13 @@ app.use((err, req, res, next) => {
 /* ───────── frontend ───────── */
 
 if (isProd) {
+  // Built JS/CSS have a content hash in the name, so they can be cached for a year.
+  app.use("/assets", express.static(path.join(DIST_DIR, "assets"), { maxAge: "1y", immutable: true }));
   app.use(express.static(DIST_DIR, { maxAge: "1d", index: false }));
-  app.get("*", (_req, res) => res.sendFile(path.join(DIST_DIR, "index.html")));
+  app.get("*", (_req, res) => {
+    res.set("Cache-Control", "no-cache");
+    res.sendFile(path.join(DIST_DIR, "index.html"));
+  });
 } else {
   const { createServer } = await import("vite");
   const vite = await createServer({ root: ROOT, server: { middlewareMode: true }, appType: "spa" });

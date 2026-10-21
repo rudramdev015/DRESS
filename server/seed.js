@@ -19,7 +19,7 @@ export const seedProducts = [
     tag: "Bestseller",
     colors: [
       { name: "Black", hex: "#111111" },
-      { name: "Sand", hex: "#d9c3a5" },
+      { name: "White", hex: "#f4f1ea" },
     ],
     sizes: SIZES,
     images: [],
@@ -39,7 +39,7 @@ export const seedProducts = [
     graphic: "BLUE CITY",
     tag: "New",
     colors: [
-      { name: "Navy", hex: "#1f3a5f" },
+      { name: "Black", hex: "#111111" },
       { name: "White", hex: "#f4f1ea" },
     ],
     sizes: SIZES,
@@ -60,9 +60,8 @@ export const seedProducts = [
     graphic: "SUN CITY",
     tag: "",
     colors: [
-      { name: "Sand", hex: "#d9c3a5" },
-      { name: "Black", hex: "#111111" },
       { name: "White", hex: "#f4f1ea" },
+      { name: "Black", hex: "#111111" },
     ],
     sizes: SIZES,
     images: [],
@@ -97,14 +96,14 @@ export const seedProducts = [
     category: "Oversized",
     price: 799,
     mrp: 1099,
-    description: "Thar-inspired earthy tone with a back print. Boxy fit, dropped shoulders.",
+    description: "Thar-inspired back print in crisp monochrome. Boxy fit, dropped shoulders.",
     printType: "DTF",
     fabric: "240 GSM 100% cotton",
     graphic: "DESERT DRIFT",
     tag: "New",
     colors: [
-      { name: "Olive", hex: "#4b5a3a" },
       { name: "Black", hex: "#111111" },
+      { name: "White", hex: "#f4f1ea" },
     ],
     sizes: SIZES,
     images: [],
@@ -124,7 +123,6 @@ export const seedProducts = [
     graphic: "TW",
     tag: "",
     colors: [
-      { name: "Maroon", hex: "#6b1e2b" },
       { name: "Black", hex: "#111111" },
       { name: "White", hex: "#f4f1ea" },
     ],
@@ -149,8 +147,6 @@ export const seedProducts = [
     colors: [
       { name: "White", hex: "#f4f1ea" },
       { name: "Black", hex: "#111111" },
-      { name: "Navy", hex: "#1f3a5f" },
-      { name: "Maroon", hex: "#6b1e2b" },
     ],
     sizes: SIZES,
     images: [],
@@ -173,8 +169,6 @@ export const seedProducts = [
     colors: [
       { name: "Black", hex: "#111111" },
       { name: "White", hex: "#f4f1ea" },
-      { name: "Navy", hex: "#1f3a5f" },
-      { name: "Olive", hex: "#4b5a3a" },
     ],
     sizes: SIZES,
     images: [],

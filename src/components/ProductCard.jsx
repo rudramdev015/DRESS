@@ -7,7 +7,7 @@ import { openWhatsApp, productMessage } from "../lib/whatsapp.js";
 
 export function ProductVisual({ product, colorHex, image, className = "" }) {
   const src = image ?? product.images?.[0];
-  if (src) return <img src={src} alt={product.name} className={`pv-img ${className}`} loading="lazy" />;
+  if (src) return <img src={src} alt={product.name} className={`pv-img ${className}`} loading="lazy" decoding="async" />;
   return <TeeMockup color={colorHex || product.colors?.[0]?.hex} graphic={product.graphic} className={className} />;
 }
 

@@ -92,13 +92,30 @@ export function StoreProvider({ children }) {
 
 export const useStore = () => useContext(StoreContext);
 
+// Product list is fetched once and shared by every page; it refreshes quietly in the background.
+let productsCache = null;
+let productsRequest = null;
+
+export function loadProducts(force = false) {
+  if (!productsRequest || force) {
+    productsRequest = api("/products")
+      .then((list) => (productsCache = list))
+      .finally(() => {
+        setTimeout(() => (productsRequest = null), 30000);
+      });
+  }
+  return productsRequest;
+}
+
 export function useProducts() {
-  const [state, setState] = useState({ products: [], loading: true, error: "" });
+  const [state, setState] = useState(() =>
+    productsCache ? { products: productsCache, loading: false, error: "" } : { products: [], loading: true, error: "" }
+  );
   useEffect(() => {
     let alive = true;
-    api("/products")
+    loadProducts()
       .then((products) => alive && setState({ products, loading: false, error: "" }))
-      .catch((e) => alive && setState({ products: [], loading: false, error: e.message }));
+      .catch((e) => alive && setState((s) => ({ ...s, loading: false, error: s.products.length ? "" : e.message })));
     return () => {
       alive = false;
     };

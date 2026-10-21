@@ -6,6 +6,11 @@ import { ALL_SIZES, CATEGORIES, PRINT_TYPES, api, formatINR, getToken, setToken 
 import { useStore } from "../lib/store.jsx";
 import MediaTab from "./AdminMedia.jsx";
 
+const TEE_COLORS = [
+  { name: "Black", hex: "#111111" },
+  { name: "White", hex: "#f4f1ea" },
+];
+
 const EMPTY = {
   name: "",
   category: "Oversized",
@@ -16,7 +21,7 @@ const EMPTY = {
   fabric: "",
   graphic: "",
   tag: "",
-  colors: [{ name: "Black", hex: "#111111" }],
+  colors: [...TEE_COLORS],
   sizes: ["S", "M", "L", "XL", "XXL"],
   images: [],
   featured: false,
@@ -238,7 +243,14 @@ function ProductEditor({ initial, onClose, onSave, onAuthError }) {
       sizes: x.sizes.includes(s) ? x.sizes.filter((y) => y !== s) : ALL_SIZES.filter((y) => y === s || x.sizes.includes(y)),
     }));
 
-  const setColor = (i, k, v) => setP((x) => ({ ...x, colors: x.colors.map((c, j) => (j === i ? { ...c, [k]: v } : c)) }));
+  // Keep at least one colour selected; order follows TEE_COLORS.
+  const toggleColor = (c) =>
+    setP((x) => {
+      const has = x.colors.some((y) => y.name === c.name);
+      if (has && x.colors.length === 1) return x;
+      const names = has ? x.colors.filter((y) => y.name !== c.name).map((y) => y.name) : [...x.colors.map((y) => y.name), c.name];
+      return { ...x, colors: TEE_COLORS.filter((t) => names.includes(t.name)) };
+    });
 
   const upload = async (e) => {
     const files = [...e.target.files];
@@ -367,29 +379,23 @@ function ProductEditor({ initial, onClose, onSave, onAuthError }) {
           </div>
 
           <div className="field">
-            <span>Colours</span>
-            {p.colors.map((c, i) => (
-              <div key={i} className="color-row">
-                <input type="color" value={c.hex} onChange={(e) => setColor(i, "hex", e.target.value)} />
-                <input value={c.name} onChange={(e) => setColor(i, "name", e.target.value)} placeholder="Colour name" />
-                <button
-                  type="button"
-                  className="icon-btn"
-                  disabled={p.colors.length === 1}
-                  onClick={() => setP((x) => ({ ...x, colors: x.colors.filter((_, j) => j !== i) }))}
-                  aria-label="Remove colour"
-                >
-                  <TrashIcon width={16} height={16} />
-                </button>
-              </div>
-            ))}
-            <button
-              type="button"
-              className="link-btn"
-              onClick={() => setP((x) => ({ ...x, colors: [...x.colors, { name: "", hex: "#ffffff" }] }))}
-            >
-              + Add colour
-            </button>
+            <span>Tee colours (black & white only)</span>
+            <div className="bw-toggle">
+              {TEE_COLORS.map((c) => {
+                const on = p.colors.some((x) => x.name === c.name);
+                return (
+                  <button
+                    type="button"
+                    key={c.name}
+                    className={`bw-opt ${on ? "active" : ""}`}
+                    onClick={() => toggleColor(c)}
+                    aria-pressed={on}
+                  >
+                    <i style={{ background: c.hex }} /> {c.name}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="checks">
