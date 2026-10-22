@@ -1,0 +1,431 @@
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE POLISH: loaded last.
+   Breakpoints: ≤380 small phone · ≤600 phone · ≤860 tablet · ≤1180 laptop · ≥1600 big screen
+   ═══════════════════════════════════════════════════════════ */
+
+html {
+  overflow-x: clip; /* nothing (rotated marquee, glows) can cause sideways scroll */
+}
+body {
+  overflow-x: clip;
+}
+img,
+video,
+canvas {
+  max-width: 100%;
+}
+
+/* Announcement: always one tidy line */
+.announce {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  padding-inline: 16px;
+}
+.announce svg {
+  display: inline-block;
+  vertical-align: -1px;
+  margin-right: 6px;
+}
+
+/* Hero 3D placeholder: flat tee while the 3D engine loads */
+.hero3d-loading {
+  display: grid;
+  place-items: center;
+}
+.hero3d-loading .tee {
+  width: 46%;
+  opacity: 0.85;
+  filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.6));
+  animation: float 6s ease-in-out infinite;
+}
+
+/* ─────────── Laptop (≤1180px) ─────────── */
+@media (max-width: 1180px) {
+  .trust {
+    grid-template-columns: 1fr 1fr;
+  }
+  .display {
+    font-size: clamp(3.2rem, 8.4vw, 7rem);
+  }
+  .nav-links a {
+    padding: 8px 12px;
+  }
+  .hero-grid {
+    gap: 24px;
+  }
+}
+
+/* ─────────── Tablet (≤860px) ─────────── */
+@media (max-width: 860px) {
+  .hero {
+    padding: 20px 0 32px;
+  }
+  .hero-copy {
+    text-align: left;
+  }
+  .hero-stage {
+    aspect-ratio: auto;
+    max-width: 520px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .hero-stage .hero3d {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    aspect-ratio: 1 / 0.92;
+  }
+  .hero-stage .stage-glow {
+    inset: 6% 12% 22%;
+  }
+  .stage-ui {
+    position: relative;
+    left: auto;
+    bottom: auto;
+    transform: none;
+    margin-top: 4px;
+    grid-auto-flow: column;
+    align-items: center;
+    gap: 12px;
+    border-radius: 999px;
+  }
+  .section {
+    padding-block: 44px;
+  }
+  .section-head {
+    margin-bottom: 20px;
+  }
+  .marquee {
+    margin: 32px 0 12px;
+  }
+  .marquee span {
+    font-size: 1.2rem;
+    padding-block: 10px;
+  }
+  .cta-band {
+    border-radius: 24px;
+  }
+  .cta-actions,
+  .cta-actions .btn {
+    width: 100%;
+  }
+  .pdp-gallery {
+    max-width: 560px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .reels-row {
+    padding-inline: 16px;
+  }
+}
+
+/* ─────────── Phone (≤600px) ─────────── */
+@media (max-width: 600px) {
+  /* iOS zooms into inputs smaller than 16px; keep them at 16px */
+  .field input:not([type="checkbox"]):not([type="color"]),
+  .field textarea,
+  .field select,
+  .search input,
+  select,
+  .qty input {
+    font-size: 16px;
+  }
+  .announce {
+    font-size: 0.72rem;
+    padding-block: 7px;
+  }
+  .nav-inner {
+    height: 64px;
+  }
+  .logo-mark {
+    width: 40px;
+    height: 40px;
+  }
+  .logo-text b {
+    font-size: 1.25rem;
+  }
+  .hero-cta {
+    margin: 22px 0 28px;
+  }
+  .hero-cta .btn {
+    flex: 1 1 100%;
+  }
+  .hero-stats {
+    gap: 14px 22px;
+  }
+  .eyebrow.pill {
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+  }
+  .lead {
+    font-size: 1rem;
+  }
+  .trust {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .trust-item {
+    padding: 14px;
+  }
+  .bento {
+    grid-auto-rows: 200px;
+    gap: 12px;
+  }
+  .bento-item {
+    padding: 18px;
+  }
+  .bento-copy h3,
+  .b0 .bento-copy h3 {
+    font-size: 1.7rem;
+  }
+  .bento-tee,
+  .b0 .bento-tee {
+    width: 44%;
+    right: -2%;
+    top: 8%;
+  }
+  .bento-copy,
+  .b0 .bento-copy {
+    max-width: 58%;
+  }
+  .card-body {
+    padding: 12px 12px 14px;
+  }
+  .card-body h3 {
+    font-size: 0.92rem;
+  }
+  .card-meta {
+    font-size: 0.66rem;
+    letter-spacing: 0.1em;
+  }
+  .price strong {
+    font-size: 0.98rem;
+  }
+  .price s,
+  .price em {
+    font-size: 0.76rem;
+  }
+  .card-wa {
+    width: 36px;
+    height: 36px;
+    right: 8px;
+    bottom: 8px;
+  }
+  .chip {
+    top: 8px;
+    left: 8px;
+    font-size: 0.64rem;
+    padding: 4px 9px;
+  }
+  .steps {
+    gap: 10px;
+  }
+  .step {
+    padding: 20px 18px;
+  }
+  .method {
+    padding: 20px;
+  }
+  .method h3 {
+    font-size: 1.5rem;
+  }
+  .faq summary {
+    font-size: 0.98rem;
+  }
+
+  /* Shop toolbar: full-width search + sort side by side */
+  .toolbar {
+    gap: 10px;
+  }
+  .chips {
+    margin-inline: -16px;
+    padding-inline: 16px;
+    width: calc(100% + 32px);
+    max-width: none;
+  }
+  .toolbar-right {
+    width: 100%;
+    flex-wrap: nowrap;
+  }
+  .search {
+    flex: 1;
+    min-width: 0;
+  }
+  .search input {
+    width: 100%;
+  }
+  .toolbar-right select {
+    flex: none;
+    max-width: 44%;
+  }
+
+  /* Product page */
+  .pdp-title {
+    font-size: 2rem;
+  }
+  .price-lg strong {
+    font-size: 1.6rem;
+  }
+  .size {
+    min-width: 48px;
+    flex: 1 0 48px;
+  }
+  .specs li {
+    font-size: 0.86rem;
+  }
+  .view-toggle {
+    right: 10px;
+    top: 10px;
+  }
+  .view-toggle button {
+    padding: 6px 11px;
+  }
+  .related {
+    margin-top: 48px;
+  }
+
+  /* Bag, studio, footer */
+  .summary {
+    padding: 18px;
+  }
+  .studio-preview {
+    padding: 20px;
+  }
+  .seg {
+    display: flex;
+  }
+  .seg button {
+    flex: 1;
+    padding: 9px 10px;
+  }
+  .footer-grid {
+    padding-block: 40px 24px;
+    gap: 26px;
+  }
+  .footer-logo {
+    width: 150px;
+    border-radius: 16px;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    padding-bottom: 110px;
+  }
+  .wa-fab {
+    width: 54px;
+    height: 54px;
+    right: 14px;
+  }
+
+  /* Admin */
+  .admin-top-inner {
+    height: auto;
+    padding-block: 10px;
+    flex-wrap: wrap;
+  }
+  .admin-tabs {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .admin-tabs button {
+    flex: 1 0 auto;
+    white-space: nowrap;
+  }
+  .admin-body h1 {
+    font-size: 1.8rem;
+  }
+  .modal {
+    padding: 0;
+    place-items: end stretch;
+  }
+  .modal-card {
+    max-height: 92vh;
+    border-radius: 22px 22px 0 0;
+  }
+  .media-add .btn {
+    width: 100%;
+  }
+  .login-card {
+    padding: 24px 20px;
+  }
+}
+
+/* ─────────── Small phone (≤380px) ─────────── */
+@media (max-width: 380px) {
+  .grid {
+    gap: 10px;
+  }
+  .display {
+    font-size: 3rem;
+  }
+  .logo-text small {
+    letter-spacing: 0.4em;
+  }
+  .nav-actions {
+    gap: 6px;
+  }
+  .icon-btn {
+    width: 38px;
+    height: 38px;
+  }
+  .stage-swatches .swatch {
+    width: 24px;
+    height: 24px;
+  }
+  .bento-copy p {
+    display: none;
+  }
+}
+
+/* ─────────── Big screens (≥1600px) ─────────── */
+@media (min-width: 1600px) {
+  .wrap {
+    max-width: 1400px;
+  }
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  .hero-stage {
+    max-width: 660px;
+  }
+}
+
+/* ─────────── iPhone notch / home bar ─────────── */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .wa-fab {
+    bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+  .toast {
+    bottom: calc(28px + env(safe-area-inset-bottom));
+  }
+  .drawer-foot {
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+  }
+  .nav-inner,
+  .announce {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+  @media (max-width: 860px) {
+    .buy-bar {
+      bottom: calc(10px + env(safe-area-inset-bottom));
+    }
+    .wa-fab-raise {
+      bottom: calc(92px + env(safe-area-inset-bottom));
+    }
+  }
+}
+
+/* Touch devices: no hover lift that "sticks" after a tap */
+@media (hover: none) {
+  .card:hover,
+  .bento-item:hover,
+  .btn:hover:not(:disabled) {
+    transform: none;
+  }
+}

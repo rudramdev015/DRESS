@@ -141,11 +141,11 @@ export default function Home() {
             ) : (
               <SafeStage fallback={<LogoFallback />}>
                 {show3d ? (
-                  <Suspense fallback={<div className="hero3d hero3d-loading" />}>
+                  <Suspense fallback={<div className="hero3d hero3d-loading"><TeeMockup color={HERO_COLORS[ci].hex} graphic="TRADE WORLD" /></div>}>
                     <Hero3D color={HERO_COLORS[ci].hex} onFail={() => setWebglFailed(true)} />
                   </Suspense>
                 ) : (
-                  <div className="hero3d hero3d-loading" />
+                  <div className="hero3d hero3d-loading"><TeeMockup color={HERO_COLORS[ci].hex} graphic="TRADE WORLD" /></div>
                 )}
               </SafeStage>
             )}

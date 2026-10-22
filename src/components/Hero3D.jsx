@@ -141,6 +141,7 @@ export default function Hero3D({ color = "#111111", graphic = "", onFail }) {
     const pmrem = new THREE.PMREMGenerator(renderer);
     const envTex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     scene.environment = envTex;
+    scene.environmentIntensity = 0.7;
 
     const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
     camera.position.set(0, -0.4, 14.5);
@@ -200,6 +201,10 @@ export default function Hero3D({ color = "#111111", graphic = "", onFail }) {
       const ink = targetColor.current.getHSL({ h: 0, s: 0, l: 0 }).l > 0.5 ? "dark" : "light";
       if (ink === inkNow && !force) return;
       inkNow = ink;
+      // Black fabric gets less shine so it reads as deep black, not grey.
+      fabric.envMapIntensity = ink === "light" ? 0.15 : 0.5;
+      fabric.sheen = ink === "light" ? 0.08 : 0.3;
+      fabric.specularIntensity = ink === "light" ? 0.15 : 0.5; // cotton is matte: tiny reflections only
       if (frontTex) {
         frontMat.map = frontTex[ink];
         frontMat.opacity = 1;
@@ -302,7 +307,9 @@ export default function Hero3D({ color = "#111111", graphic = "", onFail }) {
       const h = el.clientHeight || 1;
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
-      camera.position.z = w / h < 0.9 ? 16.5 : 14.5;
+      // Fit the tee (with a little breathing room) to whatever shape the box is: phone, tablet or desktop.
+      const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+      camera.position.z = Math.max(4.1 / t, 3.5 / (t * camera.aspect));
       camera.updateProjectionMatrix();
     };
     const ro = new ResizeObserver(resize);
