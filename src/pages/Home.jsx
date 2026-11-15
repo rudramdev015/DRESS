@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 import ProductCard from "../components/ProductCard.jsx";
 import TeeMockup from "../components/TeeMockup.jsx";
 import HangerRack from "../components/HangerRack.jsx";
+import Lookbook from "../components/Lookbook.jsx";
+import { DEFAULT_HOME } from "../../shared/homeDefaults.js";
 import { Reels, Reviews, TrustStrip } from "../components/Showcase.jsx";
 import { ArrowIcon, SparkIcon, WhatsAppIcon } from "../components/Icons.jsx";
-import { CATEGORIES } from "../lib/api.js";
 import { useProducts, useStore } from "../lib/store.jsx";
 import usePageTitle from "../lib/usePageTitle.js";
 import { openWhatsApp, quickMessage } from "../lib/whatsapp.js";
@@ -17,8 +18,6 @@ const HERO_COLORS = [
   { name: "Black", hex: "#070707" },
   { name: "White", hex: "#f4f1ea" },
 ];
-
-const MARQUEE = ["Oversized Tees", "Custom Names", "College Fests", "Corporate Bulk", "Event Tees", "Couple Tees", "Gym Crews", "Brand Merch"];
 
 const STEPS = [
   { n: "01", t: "Pick your tee", d: "Choose a style, colour and sizes from the shop — or bring your own idea." },
@@ -33,18 +32,12 @@ const METHODS = [
   { t: "Vinyl (HTV)", d: "Crisp names, numbers and logos. Perfect for team tees and personalised gifts.", c: "m3" },
 ];
 
-const FAQ = [
-  { q: "Is there a minimum order?", a: "No. We print a single custom tee too. Bulk pricing starts at 10 pieces." },
-  { q: "How do I place an order?", a: "Add tees to your bag or tap 'Order on WhatsApp'. Your order arrives in our WhatsApp with all details filled in, and we confirm price, payment and delivery there." },
-  { q: "How long does printing take?", a: "Usually 2–4 working days for small orders. For bulk orders, we confirm the timeline on WhatsApp before we start." },
-  { q: "Can you design it for me?", a: "Yes. Tell us your idea on WhatsApp and we'll share a mockup before printing." },
-];
-
+// Tee drawn on each category tile when no photo is set (dark tiles get white tees, cream tiles black).
 const BENTO = [
-  { color: "#111111", graphic: "OVERSIZED" },
-  { color: "#f4f1ea", graphic: "CLASSIC" },
-  { color: "#111111", graphic: "POLO" },
-  { color: "#f4f1ea", graphic: "YOUR NAME" },
+  { color: "#f4f1ea", graphic: "OVERSIZED" },
+  { color: "#111111", graphic: "CLASSIC" },
+  { color: "#f4f1ea", graphic: "POLO" },
+  { color: "#111111", graphic: "YOUR NAME" },
 ];
 
 // If WebGL fails for any reason, show the logo card instead of a blank space.
@@ -69,6 +62,8 @@ function LogoFallback() {
 export default function Home() {
   const { settings } = useStore();
   usePageTitle("");
+  const home = settings.home || DEFAULT_HOME;
+  const { hero } = home;
   const { products, loading } = useProducts();
   const featured = products.filter((p) => p.featured).slice(0, 8);
   const list = featured.length ? featured : products.slice(0, 8);
@@ -106,16 +101,15 @@ export default function Home() {
         <div className="wrap hero-grid">
           <div className="hero-copy">
             <span className="eyebrow pill">
-              <SparkIcon width={12} height={12} /> Custom T-shirt printing · Jodhpur
+              <SparkIcon width={12} height={12} /> {hero.eyebrow}
             </span>
             <h1 className="display">
-              Print your
+              {hero.title}
               <br />
-              <span className="brush-word">story.</span>
+              <span className="brush-word">{hero.highlight}</span>
             </h1>
             <p className="lead">
-              Streetwear-grade tees printed in the Blue City: oversized drops, custom names, team and event orders. From one
-              piece to a thousand.
+              {hero.subtitle}
             </p>
             <div className="hero-cta">
               <Link to="/shop" className="btn btn-primary btn-lg">
@@ -128,16 +122,25 @@ export default function Home() {
                 <WhatsAppIcon width={18} height={18} /> Order on WhatsApp
               </button>
             </div>
-            <ul className="hero-stats">
-              <li><b>1 → 1000+</b><span>pieces per order</span></li>
-              <li><b>DTF · Screen · Vinyl</b><span>print methods</span></li>
-              <li><b>Jodhpur</b><span>printed in-house</span></li>
-            </ul>
+            {home.stats.length > 0 && (
+              <ul className="hero-stats">
+                {home.stats.map((st) => (
+                  <li key={st.value + st.label}>
+                    <b>{st.value}</b>
+                    <span>{st.label}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <div className="hero-stage">
             <div className="stage-glow" style={{ "--c": HERO_COLORS[ci].hex }} />
-            {webglFailed ? (
+            {hero.image ? (
+              <div className="hero-photo">
+                <img src={hero.image} alt={`${hero.title} ${hero.highlight}`} fetchpriority="high" />
+              </div>
+            ) : webglFailed ? (
               <LogoFallback />
             ) : (
               <SafeStage fallback={<LogoFallback />}>
@@ -150,7 +153,7 @@ export default function Home() {
                 )}
               </SafeStage>
             )}
-            {!webglFailed && (
+            {!webglFailed && !hero.image && (
               <div className="stage-ui">
                 <div className="stage-swatches" role="group" aria-label="Try a colour">
                   {HERO_COLORS.map((c, i) => (
@@ -179,15 +182,17 @@ export default function Home() {
       <TrustStrip settings={settings} />
 
       {/* MARQUEE */}
-      <div className="marquee" aria-hidden="true">
-        <div className="marquee-track">
-          {[...MARQUEE, ...MARQUEE].map((m, i) => (
-            <span key={i}>
-              {m} <SparkIcon width={14} height={14} />
-            </span>
-          ))}
+      {home.marquee.length > 0 && (
+        <div className="marquee" aria-hidden="true">
+          <div className="marquee-track">
+            {[...home.marquee, ...home.marquee].map((m, i) => (
+              <span key={i}>
+                {m} <SparkIcon width={14} height={14} />
+              </span>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* 3D HANGER RACK — printed tees, added from Admin */}
       <HangerRack products={products} />
@@ -206,13 +211,17 @@ export default function Home() {
           </Link>
         </div>
         <div className="bento">
-          {CATEGORIES.map((c, i) => (
-            <Link key={c.id} to={`/shop?cat=${c.id}`} className={`bento-item reveal b${i}`}>
-              <div className="bento-tee">
-                <TeeMockup color={BENTO[i].color} graphic={BENTO[i].graphic} />
-              </div>
+          {home.categories.map((c, i) => (
+            <Link key={c.id} to={`/shop?cat=${c.id}`} className={`bento-item reveal b${i} ${c.image ? "has-photo" : ""}`}>
+              {c.image ? (
+                <img className="bento-photo" src={c.image} alt={c.title} loading="lazy" decoding="async" />
+              ) : (
+                <div className="bento-tee">
+                  <TeeMockup color={BENTO[i].color} graphic={BENTO[i].graphic} />
+                </div>
+              )}
               <div className="bento-copy">
-                <h3>{c.label}</h3>
+                <h3>{c.title}</h3>
                 <p>{c.blurb}</p>
                 <span className="link-arrow">
                   Explore <ArrowIcon width={16} height={16} />
@@ -242,6 +251,8 @@ export default function Home() {
           <div className="grid">{list.map((p) => <ProductCard key={p.id} product={p} />)}</div>
         )}
       </section>
+
+      <Lookbook items={home.gallery} />
 
       <Reels settings={settings} />
 
@@ -299,13 +310,15 @@ export default function Home() {
         <div className="cta-band bulk reveal">
           <div className="bulk-copy">
             <span className="brush cta-brush">Bulk orders</span>
-            <h2 className="display-sm">10+ tees for your team, college or brand?</h2>
-            <p>Send us your quantity and design. We'll reply on WhatsApp with bulk pricing and a mockup.</p>
-            <ul className="bulk-points">
-              <li>From 10 pieces</li>
-              <li>Mockup before we print</li>
-              <li>Better price per piece</li>
-            </ul>
+            <h2 className="display-sm">{home.bulk.title}</h2>
+            <p>{home.bulk.text}</p>
+            {home.bulk.points.length > 0 && (
+              <ul className="bulk-points">
+                {home.bulk.points.map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ul>
+            )}
             <div className="cta-actions">
               <button
                 className="btn btn-light btn-lg"
@@ -323,22 +336,29 @@ export default function Home() {
               )}
             </div>
           </div>
-          <div className="bulk-art" aria-hidden="true">
+          <div className="bulk-art" aria-hidden={!home.bulk.image}>
+            {home.bulk.image ? (
+              <img className="bulk-photo" src={home.bulk.image} alt="Bulk T-shirt order by Trade World" loading="lazy" />
+            ) : (
+              <>
             <div className="bulk-tee t1"><TeeMockup color="#f4f1ea" graphic="YOUR BRAND" sub="TEAM 2026" /></div>
             <div className="bulk-tee t2"><TeeMockup color="#111111" graphic="YOUR TEAM" sub="JODHPUR" /></div>
             <div className="bulk-tee t3"><TeeMockup color="#111111" graphic="COLLEGE FEST" sub="CREW" /></div>
             <span className="bulk-tag">× 50 pcs</span>
+              </>
+            )}
           </div>
         </div>
       </section>
 
       {/* FAQ */}
+      {home.faq.length > 0 && (
       <section className="section wrap faq-wrap">
         <h2 className="display-sm">
           Got <span className="grad-text">questions?</span>
         </h2>
         <div className="faq">
-          {FAQ.map((f) => (
+          {home.faq.map((f) => (
             <details key={f.q}>
               <summary>{f.q}</summary>
               <p>{f.a}</p>
@@ -346,6 +366,7 @@ export default function Home() {
           ))}
         </div>
       </section>
+      )}
     </>
   );
 }

@@ -149,9 +149,9 @@ export default function Hero3D({ color = "#111111", graphic = "", onFail }) {
     // Studio lighting: neutral key + soft warm and cool rims, so black stays rich and white stays white.
     const key = new THREE.DirectionalLight(0xffffff, 1.6);
     key.position.set(3, 5, 6);
-    const warm = new THREE.PointLight(0xffc9a0, 18, 20);
+    const warm = new THREE.PointLight(0xffe6cc, 16, 20);
     warm.position.set(-5, 2, 3);
-    const cool = new THREE.PointLight(0xbcd0ff, 18, 20);
+    const cool = new THREE.PointLight(0xe8eeff, 16, 20);
     cool.position.set(5, -2, 3);
     const rim = new THREE.DirectionalLight(0xffffff, 1.2);
     rim.position.set(0, 3, -6);

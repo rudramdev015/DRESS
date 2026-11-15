@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import TeeMockup from "./TeeMockup.jsx";
+import StudioTee from "./StudioTee.jsx";
 import { CloseIcon, TrashIcon, WhatsAppIcon } from "./Icons.jsx";
 import { formatINR } from "../lib/api.js";
 import { useStore } from "../lib/store.jsx";
@@ -46,7 +46,7 @@ export default function CartDrawer() {
               {cart.map((i) => (
                 <li key={i.key} className="drawer-item">
                   <div className="drawer-thumb">
-                    {i.image ? <img src={i.image} alt="" /> : <TeeMockup color={i.colorHex} graphic={i.graphic} />}
+                    {i.image ? <img src={i.image} alt="" /> : <StudioTee color={i.colorHex} graphic={i.graphic} />}
                   </div>
                   <div className="drawer-info">
                     <b>{i.name}</b>

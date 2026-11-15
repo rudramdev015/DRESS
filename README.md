@@ -30,7 +30,8 @@ Open **http://localhost:5050/admin**
 
 Change both in the `.env` file, then restart the server.
 
-From the admin panel you can:
+From the admin panel you can (open `/admin?tab=home` to jump straight to the home page editor):
+- **Home page**: change every photo and text on the home page: hero (photo or 3D tee), numbers, moving banner, the 4 style tiles, the **lookbook gallery**, the bulk-orders block and the FAQ. Photos are shrunk in the browser before upload.
 - add, edit and delete tees (photos, price, MRP, colours, sizes, badge, featured, in stock)
 - change the **WhatsApp number** in **Settings** (orders go to **+91 93584 24592** by default)
 - change the phone, email, address, Instagram link and top announcement bar
@@ -71,6 +72,16 @@ Back up `data/` and `uploads/` — they contain your products.
 - Server compresses responses (gzip) and caches data in memory.
 - Built files are cached by browsers for a year; product data for 15 seconds.
 - The 3D tee uses lighter settings on phones and pauses when off-screen.
+
+## Put it online (Vercel)
+
+The project is ready for Vercel (`vercel.json` + `api/index.js`).
+
+1. vercel.com → **Add New → Project** → import the `DRESS` GitHub repo → **Deploy**.
+2. **Settings → Environment Variables**: add `ADMIN_PASSWORD` (your admin password). Optional: `ADMIN_ID`, `WHATSAPP_NUMBER`, `JWT_SECRET`.
+3. **Storage → Create → Blob** → connect it to the project, then **Redeploy**. Vercel can't keep files on its servers, so products, settings and photos are saved in Blob. Until Blob is connected the shop works with the default products and admin saving is switched off (with a clear message).
+
+Uploads on Vercel are limited to about 4.5 MB per request. Photos are compressed automatically; for reels, paste Instagram links or keep videos small.
 
 ## Put it online (Render)
 

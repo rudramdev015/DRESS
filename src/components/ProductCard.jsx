@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import TeeMockup from "./TeeMockup.jsx";
+import StudioTee from "./StudioTee.jsx";
 import { WhatsAppIcon } from "./Icons.jsx";
 import { formatINR } from "../lib/api.js";
 import { useStore } from "../lib/store.jsx";
@@ -8,7 +8,7 @@ import { openWhatsApp, productMessage } from "../lib/whatsapp.js";
 export function ProductVisual({ product, colorHex, image, className = "" }) {
   const src = image ?? product.images?.[0];
   if (src) return <img src={src} alt={product.name} className={`pv-img ${className}`} loading="lazy" decoding="async" />;
-  return <TeeMockup color={colorHex || product.colors?.[0]?.hex} graphic={product.graphic} className={className} />;
+  return <StudioTee color={colorHex || product.colors?.[0]?.hex} graphic={product.graphic} className={className} alt={product.name} />;
 }
 
 export default function ProductCard({ product }) {

@@ -1,178 +1,14 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { RAIL_TO_TEE, createHangerKit, fabricMaterials, frontTexture, garmentGeometry, loadImage } from "../lib/garment.js";
 
 /*
-  3D clothes rail: every tee hangs on its own hanger and swings like real fabric.
-  Tees are thin curved "cloth" planes cut to a T-shirt silhouette, textured with the
-  product photo (or its print when there is no photo).
+  3D clothes rail: every tee hangs on a walnut hanger with a brass hook and swings like real fabric.
+  Tees use the product photo when there is one, otherwise their print.
 */
 
-// T-shirt outline in the same SVG units as TeeMockup (x 18–282, y 8–312).
-const TEE_PATH = "M98 18 L122 8 Q150 40 178 8 L202 18 L282 62 L252 126 L224 112 L226 304 Q150 314 74 304 L76 112 L48 126 L18 62 Z";
-const SVG_W = 264;
-const SVG_H = 304;
-const U = 52; // SVG units per world unit
-const TEE_W = SVG_W / U; // ≈ 5.08
-const TEE_H = SVG_H / U; // ≈ 5.85
-const TEX_W = 1024;
-const TEX_H = Math.round((TEX_W * SVG_H) / SVG_W);
-const SPACING = 6.1;
-const RAIL_TO_TEE = 3.65; // rail centre → tee centre
-const HANGER_Z = -0.32; // hanger sits just behind the fabric
-
-function isLight(hex = "#111111") {
-  const h = hex.replace("#", "");
-  const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.6;
-}
-
-function teeCanvas({ color, image, graphic, back = false }) {
-  const c = document.createElement("canvas");
-  c.width = TEX_W;
-  c.height = TEX_H;
-  const g = c.getContext("2d");
-  const s = TEX_W / SVG_W;
-  if (back) {
-    g.translate(TEX_W, 0);
-    g.scale(-1, 1);
-  }
-  g.save();
-  g.scale(s, s);
-  g.translate(-18, -8);
-  const path = new Path2D(TEE_PATH);
-  g.save();
-  g.clip(path);
-
-  // fabric
-  g.fillStyle = color;
-  g.fillRect(0, 0, 400, 400);
-
-  if (image && !back) {
-    // product photo, "cover" fit over the whole tee
-    g.restore();
-    g.save();
-    g.clip(path);
-    g.setTransform(1, 0, 0, 1, 0, 0);
-    if (back) {
-      g.translate(TEX_W, 0);
-      g.scale(-1, 1);
-    }
-    const k = Math.max(TEX_W / image.width, TEX_H / image.height);
-    const w = image.width * k;
-    const h = image.height * k;
-    g.drawImage(image, (TEX_W - w) / 2, (TEX_H - h) / 2, w, h);
-    g.scale(s, s);
-    g.translate(-18, -8);
-  } else if (!back) {
-    // printed graphic
-    const light = isLight(color);
-    const ink = light ? "#151515" : "#f4f1ea";
-    const accent = light ? "#555" : "#cfc6b8";
-    const text = (graphic || "TRADE WORLD").slice(0, 18);
-    g.fillStyle = accent;
-    g.beginPath();
-    g.moveTo(128, 104);
-    [[134, 94], [138, 97], [142, 89], [147, 93], [150, 86], [155, 92], [159, 87], [164, 95], [168, 92], [174, 104]].forEach(([x, y]) =>
-      g.lineTo(x, y)
-    );
-    g.closePath();
-    g.fill();
-    g.fillStyle = ink;
-    g.textAlign = "center";
-    const size = Math.min(30, 132 / (text.length * 0.5));
-    g.font = `${size}px Anton, Impact, sans-serif`;
-    g.fillText(text, 150, 132, 136);
-    g.fillStyle = accent;
-    g.fillRect(132, 141, 36, 1.4);
-    g.font = '600 8.5px "Space Grotesk", sans-serif';
-    g.fillText("J O D H P U R", 150, 156);
-  } else {
-    // back neck label
-    const light = isLight(color);
-    g.fillStyle = light ? "rgba(0,0,0,.55)" : "rgba(255,255,255,.6)";
-    g.textAlign = "center";
-    g.font = '600 6px "Space Grotesk", sans-serif';
-    g.fillText("TRADE WORLD", 150, 34);
-  }
-
-  // shading: soft side shadows, top light, a few folds
-  const side = g.createLinearGradient(18, 0, 282, 0);
-  side.addColorStop(0, "rgba(0,0,0,.34)");
-  side.addColorStop(0.22, "rgba(0,0,0,0)");
-  side.addColorStop(0.78, "rgba(0,0,0,0)");
-  side.addColorStop(1, "rgba(0,0,0,.34)");
-  g.fillStyle = side;
-  g.fillRect(0, 0, 400, 400);
-  const top = g.createLinearGradient(0, 8, 0, 312);
-  top.addColorStop(0, "rgba(255,255,255,.08)");
-  top.addColorStop(1, "rgba(0,0,0,.22)");
-  g.fillStyle = top;
-  g.fillRect(0, 0, 400, 400);
-  g.strokeStyle = "rgba(0,0,0,.10)";
-  g.lineWidth = 3;
-  [[96, 140, 104, 300], [204, 140, 196, 300], [70, 70, 96, 128], [230, 70, 204, 128]].forEach(([x1, y1, x2, y2]) => {
-    g.beginPath();
-    g.moveTo(x1, y1);
-    g.quadraticCurveTo((x1 + x2) / 2 + 6, (y1 + y2) / 2, x2, y2);
-    g.stroke();
-  });
-  // collar rib + hem stitching
-  g.strokeStyle = "rgba(0,0,0,.35)";
-  g.lineWidth = 5;
-  g.beginPath();
-  g.moveTo(120, 9);
-  g.quadraticCurveTo(150, 46, 180, 9);
-  g.stroke();
-  g.setLineDash([3, 3]);
-  g.lineWidth = 0.8;
-  g.strokeStyle = isLight(color) ? "rgba(0,0,0,.25)" : "rgba(255,255,255,.18)";
-  g.beginPath();
-  g.moveTo(78, 298);
-  g.quadraticCurveTo(150, 307, 222, 298);
-  g.stroke();
-  g.setLineDash([]);
-  g.restore();
-
-  // crisp outline
-  g.strokeStyle = "rgba(0,0,0,.45)";
-  g.lineWidth = 1.2;
-  g.stroke(path);
-  g.restore();
-
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 4;
-  return t;
-}
-
-// Gentle drape: sides curve back, small ripples, sleeves fall away.
-function clothGeometry(segX, segY) {
-  const geo = new THREE.PlaneGeometry(TEE_W, TEE_H, segX, segY);
-  const p = geo.attributes.position;
-  for (let i = 0; i < p.count; i++) {
-    const x = p.getX(i);
-    const y = p.getY(i);
-    const nx = x / (TEE_W / 2);
-    let z = -0.32 * nx * nx + 0.045 * Math.sin(y * 1.4 + x * 0.7) + 0.03 * Math.sin(x * 2.3);
-    if (Math.abs(nx) > 0.62) z -= 0.35 * (Math.abs(nx) - 0.62);
-    p.setZ(i, z);
-  }
-  geo.computeVertexNormals();
-  return geo;
-}
-
-function loadImage(src) {
-  return new Promise((resolve) => {
-    if (!src) return resolve(null);
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.decoding = "async";
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = src;
-  });
-}
+const SPACING = 6.0;
 
 export default function Rack3D({ items, index = 0, onIndexChange, onOpen, onFail }) {
   const mountRef = useRef(null);
@@ -200,6 +36,7 @@ export default function Rack3D({ items, index = 0, onIndexChange, onOpen, onFail
     }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, low ? 1.5 : 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     el.appendChild(renderer.domElement);
     const canvas = renderer.domElement;
@@ -209,137 +46,112 @@ export default function Rack3D({ items, index = 0, onIndexChange, onOpen, onFail
     const pmrem = new THREE.PMREMGenerator(renderer);
     const envTex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     scene.environment = envTex;
-    scene.environmentIntensity = 0.35;
-
+    scene.environmentIntensity = 0.4;
     const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 200);
 
-    // Lights: soft key, warm + cool rims and a spotlight that follows the focused tee
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x222222, 0.35));
-    const key = new THREE.DirectionalLight(0xffffff, 1.3);
-    key.position.set(4, 8, 10);
-    const warm = new THREE.PointLight(0xffb27a, 16, 30);
-    warm.position.set(-8, 2, 5);
-    const cool = new THREE.PointLight(0x9db8ff, 14, 30);
-    cool.position.set(8, -2, 5);
-    const spot = new THREE.SpotLight(0xffffff, 55, 40, 0.42, 0.7, 1.2);
+    // Boutique lighting: key from upper-left shows the folds, soft fill, warm/cool rims, spot on the focused tee
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x1a1a1a, 0.35));
+    const key = new THREE.DirectionalLight(0xffffff, 1.7);
+    key.position.set(-5, 7, 9);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.35);
+    fill.position.set(6, -1, 6);
+    const rim = new THREE.DirectionalLight(0xffffff, 0.9);
+    rim.position.set(0, 4, -8);
+    const warm = new THREE.PointLight(0xffe6cc, 10, 30);
+    warm.position.set(-9, 1, 5);
+    const cool = new THREE.PointLight(0xe8eeff, 8, 30);
+    cool.position.set(9, -2, 5);
+    const spot = new THREE.SpotLight(0xffffff, 45, 40, 0.4, 0.75, 1.2);
     spot.position.set(0, 9, 9);
-    scene.add(key, warm, cool, spot, spot.target);
+    spot.target.position.set(0, -0.6, 0);
+    scene.add(key, fill, rim, warm, cool, spot, spot.target);
 
     const rack = new THREE.Group();
+    rack.position.y = 3.2; // centre the hanging tees in view
     scene.add(rack);
-    rack.position.y = RAIL_TO_TEE - 0.35; // tees centred slightly below the middle
 
-    const disposables = [];
-    const track = (o) => (disposables.push(o), o);
-
-    // Rail + ceiling drops
     const n = items.length;
-    const railLen = (n - 1) * SPACING + 9;
-    const chrome = track(new THREE.MeshStandardMaterial({ color: 0xd8d8d8, metalness: 1, roughness: 0.22 }));
-    const rail = new THREE.Mesh(track(new THREE.CylinderGeometry(0.075, 0.075, railLen, 24)), chrome);
+    const owned = []; // geometries/materials to dispose
+
+    // Chrome rail with matte black ceiling brackets
+    const railLen = (n - 1) * SPACING + 8;
+    const chrome = new THREE.MeshStandardMaterial({ color: 0xdedede, metalness: 1, roughness: 0.18 });
+    const matte = new THREE.MeshStandardMaterial({ color: 0x151515, metalness: 0.4, roughness: 0.5 });
+    const railGeo = new THREE.CylinderGeometry(0.075, 0.075, railLen, 28);
+    const capGeo = new THREE.CylinderGeometry(0.11, 0.11, 0.16, 24);
+    const dropGeo = new THREE.CylinderGeometry(0.06, 0.06, 9, 16);
+    const collarGeo = new THREE.CylinderGeometry(0.13, 0.13, 0.22, 20);
+    owned.push(chrome, matte, railGeo, capGeo, dropGeo, collarGeo);
+    const rail = new THREE.Mesh(railGeo, chrome);
     rail.rotation.z = Math.PI / 2;
-    rail.position.set(((n - 1) * SPACING) / 2, 0, HANGER_Z);
+    rail.position.x = ((n - 1) * SPACING) / 2;
     rack.add(rail);
-    const capGeo = track(new THREE.SphereGeometry(0.13, 20, 16));
-    const dropGeo = track(new THREE.CylinderGeometry(0.05, 0.05, 8, 16));
     [-1, 1].forEach((side) => {
       const x = rail.position.x + (side * railLen) / 2;
-      const cap = new THREE.Mesh(capGeo, chrome);
-      cap.position.set(x, 0, HANGER_Z);
-      const drop = new THREE.Mesh(dropGeo, chrome);
-      drop.position.set(x - side * 0.6, 4, HANGER_Z);
-      rack.add(cap, drop);
+      const cap = new THREE.Mesh(capGeo, matte);
+      cap.rotation.z = Math.PI / 2;
+      cap.position.x = x;
+      const drop = new THREE.Mesh(dropGeo, matte);
+      drop.position.set(x - side * 0.5, 4.5, 0);
+      const collar = new THREE.Mesh(collarGeo, matte);
+      collar.position.set(x - side * 0.5, 0.05, 0);
+      rack.add(cap, drop, collar);
     });
 
-    // Shared hanger parts
-    const hangerMat = track(new THREE.MeshStandardMaterial({ color: 0x141414, metalness: 0.2, roughness: 0.45 }));
-    const goldMat = track(new THREE.MeshStandardMaterial({ color: 0xd8b07f, metalness: 1, roughness: 0.3 }));
-    const armCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-1.95, -1.98, 0),
-      new THREE.Vector3(-1.05, -1.36, 0),
-      new THREE.Vector3(0, -0.86, 0),
-      new THREE.Vector3(1.05, -1.36, 0),
-      new THREE.Vector3(1.95, -1.98, 0),
-    ]);
-    const armGeo = track(new THREE.TubeGeometry(armCurve, 48, 0.085, 10, false));
-    const tipGeo = track(new THREE.SphereGeometry(0.1, 14, 12));
-    const neckGeo = track(new THREE.CylinderGeometry(0.03, 0.03, 0.7, 10));
-    const hookGeo = track(new THREE.TorusGeometry(0.16, 0.03, 10, 32, Math.PI * 1.6));
-    const clothGeo = track(clothGeometry(low ? 18 : 30, low ? 22 : 36));
+    // Shared tee + hanger geometry
+    const seg = low ? { segX: 40, segY: 46 } : { segX: 64, segY: 72 };
+    const frontGeo = garmentGeometry("front", seg);
+    const backGeo = garmentGeometry("back", seg);
+    owned.push(frontGeo, backGeo);
+    const kit = createHangerKit({ low });
 
-    // Hangers + tees
     const hangers = [];
-    const fabricMats = [];
+    const mats = [];
     let disposed = false;
     items.forEach((item, i) => {
       const pivot = new THREE.Group(); // swings around the rail
-      pivot.position.set(i * SPACING, 0, HANGER_Z);
+      pivot.position.set(i * SPACING, 0, 0);
       rack.add(pivot);
+      pivot.add(kit.make());
 
-      const hookWrap = new THREE.Group();
-      hookWrap.rotation.y = Math.PI / 2;
-      const hook = new THREE.Mesh(hookGeo, goldMat);
-      hook.rotation.z = -Math.PI / 2;
-      hookWrap.add(hook);
-      pivot.add(hookWrap);
-      const neck = new THREE.Mesh(neckGeo, goldMat);
-      neck.position.y = -0.5;
-      pivot.add(neck);
-      // arms sit just behind the fabric so only the neck part shows, like a real hanger
-      const arm = new THREE.Mesh(armGeo, hangerMat);
-      arm.position.z = -0.14;
-      pivot.add(arm);
-      [-1, 1].forEach((sx) => {
-        const tip = new THREE.Mesh(tipGeo, hangerMat);
-        tip.position.set(sx * 1.95, -1.98, -0.14);
-        pivot.add(tip);
-      });
-
-      const front = new THREE.MeshStandardMaterial({ alphaTest: 0.5, roughness: 0.92, side: THREE.FrontSide, color: 0xffffff });
-      const back = new THREE.MeshStandardMaterial({ alphaTest: 0.5, roughness: 0.92, side: THREE.BackSide, color: 0xffffff });
-      front.map = teeCanvas({ color: item.color, graphic: item.graphic });
-      back.map = teeCanvas({ color: item.color, back: true });
-      fabricMats.push(front, back);
-      const teeF = new THREE.Mesh(clothGeo, front);
-      const teeB = new THREE.Mesh(clothGeo, back);
+      const { front, back } = fabricMaterials({ color: item.color, graphic: item.graphic });
+      mats.push(front, back);
+      const teeF = new THREE.Mesh(frontGeo, front);
+      const teeB = new THREE.Mesh(backGeo, back);
+      teeF.userData.index = teeB.userData.index = i;
       const tee = new THREE.Group();
+      tee.position.y = -RAIL_TO_TEE;
       tee.add(teeF, teeB);
-      tee.position.set(0, -RAIL_TO_TEE, -HANGER_Z);
       pivot.add(tee);
-      teeF.userData.index = i;
-      teeB.userData.index = i;
+      hangers.push({ pivot, hit: [teeF, teeB], sway: 0, swayV: 0, twist: 0, focus: 0, front, item });
 
-      hangers.push({ pivot, tee, hit: [teeF, teeB], sway: 0, swayV: 0, twist: 0, depth: 0 });
-
-      // Swap in the real photo when it arrives
       if (item.image) {
         loadImage(item.image).then((img) => {
           if (disposed || !img) return;
           try {
-            const tex = teeCanvas({ color: item.color, image: img });
+            const tex = frontTexture({ color: item.color, image: img });
             front.map.dispose();
             front.map = tex;
             front.needsUpdate = true;
           } catch {
-            /* a photo from another site that blocks canvas use: keep the printed version */
+            /* photo from a site that blocks canvas use: keep the printed version */
           }
         });
       }
     });
 
-    // Redraw printed tees once fonts are ready
+    // Redraw printed tees once web fonts are ready
     document.fonts?.ready.then(() => {
       if (disposed) return;
-      items.forEach((item, i) => {
-        if (item.image) return;
-        const m = fabricMats[i * 2];
-        m.map.dispose();
-        m.map = teeCanvas({ color: item.color, graphic: item.graphic });
-        m.needsUpdate = true;
+      hangers.forEach((h) => {
+        if (h.item.image) return;
+        h.front.map.dispose();
+        h.front.map = frontTexture({ color: h.item.color, graphic: h.item.graphic });
+        h.front.needsUpdate = true;
       });
     });
 
-    // ── Camera fit ──
+    // ── Camera fit (phone, tablet, desktop) ──
     let viewW = 10;
     const resize = () => {
       const w = el.clientWidth || 1;
@@ -347,9 +159,9 @@ export default function Rack3D({ items, index = 0, onIndexChange, onOpen, onFail
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
-      const dist = Math.max(3.75 / t, 3.4 / (t * camera.aspect));
-      camera.position.set(0, -0.15, dist);
-      camera.lookAt(0, -0.15, 0);
+      const dist = Math.max(3.8 / t, 3.35 / (t * camera.aspect));
+      camera.position.set(0, -0.1, dist);
+      camera.lookAt(0, -0.1, 0);
       camera.updateProjectionMatrix();
       viewW = 2 * dist * t * camera.aspect;
     };
@@ -357,9 +169,10 @@ export default function Rack3D({ items, index = 0, onIndexChange, onOpen, onFail
     ro.observe(el);
     resize();
 
-    // ── Interaction ──
+    // ── Interaction: drag / swipe, tap, hover, trackpad ──
     const st = stateRef.current;
-    let pos = Math.min(Math.max(st.target, 0), n - 1);
+    const clamp = (v) => Math.min(Math.max(v, 0), n - 1);
+    let pos = clamp(st.target);
     let prevPos = pos;
     let dragging = false;
     let startX = 0;
@@ -380,8 +193,6 @@ export default function Rack3D({ items, index = 0, onIndexChange, onOpen, onFail
       const hit = raycaster.intersectObjects(hitList, false)[0];
       return hit ? hit.object.userData.index : -1;
     };
-    const clamp = (v) => Math.min(Math.max(v, 0), n - 1);
-
     const down = (e) => {
       dragging = true;
       moved = 0;
@@ -396,10 +207,8 @@ export default function Rack3D({ items, index = 0, onIndexChange, onOpen, onFail
         const dx = e.clientX - startX;
         moved = Math.max(moved, Math.abs(dx));
         const unitsPerPx = viewW / canvas.clientWidth / SPACING;
-        pos = clamp(startPos - dx * unitsPerPx);
-        // rubber-band past the ends
         const raw = startPos - dx * unitsPerPx;
-        if (raw < 0 || raw > n - 1) pos += (raw - pos) * 0.25;
+        pos = clamp(raw) + (raw - clamp(raw)) * 0.25; // rubber-band past the ends
         const now = performance.now();
         flick = ((lastX - e.clientX) * unitsPerPx) / Math.max(1, now - lastT);
         lastX = e.clientX;
@@ -415,28 +224,28 @@ export default function Rack3D({ items, index = 0, onIndexChange, onOpen, onFail
       if (moved < 6) {
         const i = pick(e);
         if (i >= 0) {
+          hangers[i].swayV += 0.035;
           if (i === Math.round(st.target)) cbRef.current.onOpen?.(i);
           else {
             st.target = i;
             cbRef.current.onIndexChange?.(i);
           }
-          hangers[i].swayV += 0.03;
         }
         return;
       }
-      const next = clamp(Math.round(pos + flick * 220));
-      st.target = next;
-      cbRef.current.onIndexChange?.(next);
+      st.target = clamp(Math.round(pos + flick * 220));
+      cbRef.current.onIndexChange?.(st.target);
     };
     const leave = () => {
       hovered = -1;
     };
+    let wheelTimer = 0;
     const wheel = (e) => {
-      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return; // let the page scroll
+      if (Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return; // vertical scroll stays with the page
       e.preventDefault();
       pos = clamp(pos + e.deltaX * 0.004);
-      clearTimeout(wheel.t);
-      wheel.t = setTimeout(() => {
+      clearTimeout(wheelTimer);
+      wheelTimer = setTimeout(() => {
         st.target = clamp(Math.round(pos));
         cbRef.current.onIndexChange?.(st.target);
       }, 140);
@@ -465,26 +274,19 @@ export default function Rack3D({ items, index = 0, onIndexChange, onOpen, onFail
       if (!dragging) pos += (clamp(st.target) - pos) * Math.min(1, dt * 7);
       const vel = (pos - prevPos) / Math.max(dt, 0.001);
       prevPos = pos;
-
       rack.position.x = -pos * SPACING;
-      spot.position.x = 0;
-      spot.target.position.set(0, -0.4, 0);
 
       hangers.forEach((h, i) => {
-        const dist = Math.abs(i - pos);
-        const focus = Math.max(0, 1 - dist);
-        // inertia: the rack moves, the tees lag behind and swing back (spring)
-        const force = -vel * 0.06 * (reduce ? 0 : 1);
+        // inertia: when the rail moves the tees lag behind, then swing back (damped spring)
+        const force = reduce ? 0 : -vel * 0.06;
         h.swayV += (force - h.sway) * 9 * dt - h.swayV * 3.2 * dt;
         h.sway += h.swayV;
-        const idle = reduce ? 0 : Math.sin(t * 0.9 + i * 1.7) * 0.012;
         h.pivot.rotation.z = THREE.MathUtils.clamp(h.sway, -0.35, 0.35);
-        h.pivot.rotation.x = idle + (i === hovered ? -0.05 : 0);
-        h.twist += ((i === hovered ? 0.22 : 0) + (i - pos) * -0.1 - h.twist) * Math.min(1, dt * 5);
+        h.pivot.rotation.x = (reduce ? 0 : Math.sin(t * 0.9 + i * 1.7) * 0.012) + (i === hovered ? -0.05 : 0);
+        h.twist += ((i === hovered ? 0.2 : 0) + (i - pos) * -0.1 - h.twist) * Math.min(1, dt * 5);
         h.pivot.rotation.y = h.twist;
-        // focused tee is full size; neighbours sit a touch smaller (hooks stay on the rail)
-        h.depth += (focus - h.depth) * Math.min(1, dt * 6);
-        h.pivot.scale.setScalar(0.9 + h.depth * 0.1);
+        h.focus += (Math.max(0, 1 - Math.abs(i - pos)) - h.focus) * Math.min(1, dt * 6);
+        h.pivot.scale.setScalar(0.9 + h.focus * 0.1);
       });
       renderer.render(scene, camera);
     };
@@ -495,17 +297,18 @@ export default function Rack3D({ items, index = 0, onIndexChange, onOpen, onFail
       cancelAnimationFrame(raf);
       ro.disconnect();
       io.disconnect();
+      clearTimeout(wheelTimer);
       canvas.removeEventListener("pointerdown", down);
       canvas.removeEventListener("pointermove", move);
       canvas.removeEventListener("pointerleave", leave);
       window.removeEventListener("pointerup", up);
       canvas.removeEventListener("wheel", wheel);
-      clearTimeout(wheel.t);
-      fabricMats.forEach((m) => {
+      mats.forEach((m) => {
         m.map?.dispose();
         m.dispose();
       });
-      disposables.forEach((d) => d.dispose());
+      owned.forEach((o) => o.dispose());
+      kit.dispose();
       envTex.dispose();
       pmrem.dispose();
       renderer.dispose();

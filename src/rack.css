@@ -2,6 +2,39 @@
    3D HANGER RACK · SALE PILLS · BULK ORDERS
    ═══════════════════════════════════════════════════════════ */
 
+/* ── Studio shots: realistic tee on a hanger (replaces the flat drawing) ── */
+.studio-shot {
+  display: block;
+  width: 86%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 26px 30px rgba(0, 0, 0, 0.55));
+  animation: shotIn 0.5s var(--ease) both;
+}
+@keyframes shotIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+.card-media .studio-shot {
+  width: 92%;
+  margin-top: -2%;
+  transition: transform 0.6s var(--ease);
+  transform-origin: 50% 0;
+}
+.card:hover .card-media .studio-shot {
+  transform: rotate(-1.5deg) scale(1.03);
+}
+.pdp-media .studio-shot {
+  width: 74%;
+}
+.bag-thumb .studio-shot,
+.drawer-thumb .studio-shot {
+  width: 96%;
+  filter: none;
+}
+
 /* ── Sale pill (like a boutique tag) ── */
 .sale-pill {
   display: inline-flex;

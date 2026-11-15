@@ -6,6 +6,7 @@ import { StoreProvider } from "./lib/store.jsx";
 import "./styles.css";
 import "./theme-2026.css";
 import "./rack.css";
+import "./theme-mono.css";
 import "./responsive.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(

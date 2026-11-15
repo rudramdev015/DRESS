@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import TeeMockup from "../components/TeeMockup.jsx";
+import StudioTee from "../components/StudioTee.jsx";
 import { TrashIcon, WhatsAppIcon } from "../components/Icons.jsx";
 import { formatINR } from "../lib/api.js";
 import { useStore } from "../lib/store.jsx";
@@ -43,7 +43,7 @@ export default function Bag() {
           {cart.map((i) => (
             <li key={i.key} className="bag-item">
               <Link to={`/product/${i.id}`} className="bag-thumb">
-                {i.image ? <img src={i.image} alt={i.name} /> : <TeeMockup color={i.colorHex} graphic={i.graphic} />}
+                {i.image ? <img src={i.image} alt={i.name} /> : <StudioTee color={i.colorHex} graphic={i.graphic} />}
               </Link>
               <div className="bag-info">
                 <Link to={`/product/${i.id}`}>

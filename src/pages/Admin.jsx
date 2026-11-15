@@ -5,6 +5,8 @@ import { CloseIcon, EditIcon, PlusIcon, TrashIcon } from "../components/Icons.js
 import { ALL_SIZES, CATEGORIES, PRINT_TYPES, api, formatINR, getToken, setToken } from "../lib/api.js";
 import { useStore } from "../lib/store.jsx";
 import MediaTab from "./AdminMedia.jsx";
+import HomeTab from "./AdminHome.jsx";
+import { uploadImages } from "../lib/compressImage.js";
 
 const TEE_COLORS = [
   { name: "Black", hex: "#111111" },
@@ -32,7 +34,7 @@ const EMPTY = {
 export default function Admin() {
   const navigate = useNavigate();
   const { setSettings } = useStore();
-  const [tab, setTab] = useState("products");
+  const [tab, setTab] = useState(() => new URLSearchParams(window.location.search).get("tab") || "products");
   const [products, setProducts] = useState([]);
   const [settings, setLocalSettings] = useState(null);
   const [editing, setEditing] = useState(null);
@@ -128,6 +130,7 @@ export default function Admin() {
           </Link>
           <div className="admin-tabs">
             <button className={tab === "products" ? "active" : ""} onClick={() => setTab("products")}>Products</button>
+            <button className={tab === "home" ? "active" : ""} onClick={() => setTab("home")}>Home page</button>
             <button className={tab === "media" ? "active" : ""} onClick={() => setTab("media")}>Reels & Reviews</button>
             <button className={tab === "settings" ? "active" : ""} onClick={() => setTab("settings")}>Settings</button>
           </div>
@@ -223,6 +226,7 @@ export default function Admin() {
           </form>
         )}
 
+        {tab === "home" && settings && <HomeTab settings={settings} onSave={persistSettings} onAuthError={handle} />}
         {tab === "media" && settings && <MediaTab settings={settings} onSave={persistSettings} onAuthError={handle} />}
       </div>
 
@@ -258,12 +262,10 @@ function ProductEditor({ initial, onClose, onSave, onAuthError }) {
     const files = [...e.target.files];
     e.target.value = "";
     if (!files.length) return;
-    const form = new FormData();
-    files.forEach((f) => form.append("images", f));
     setUploading(true);
     setError("");
     try {
-      const { urls } = await api("/upload", { method: "POST", form, auth: true });
+      const urls = await uploadImages(api, files);
       setP((x) => ({ ...x, images: [...x.images, ...urls].slice(0, 8) }));
     } catch (err) {
       if (err.status === 401) onAuthError(err);
