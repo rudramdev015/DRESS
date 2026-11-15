@@ -1,6 +1,9 @@
 node_modules
 dist
-.env
 data
 uploads
 .vercel
+.env*
+!.env.example
+
+.env*

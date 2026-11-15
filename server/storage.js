@@ -14,7 +14,7 @@ import crypto from "node:crypto";
 */
 
 const IS_VERCEL = Boolean(process.env.VERCEL);
-const HAS_BLOB = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+const HAS_BLOB = Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
 
 export const mode = HAS_BLOB ? "blob" : IS_VERCEL ? "readonly" : "local";
 

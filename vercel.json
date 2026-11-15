@@ -1,17 +1,23 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": null,
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "functions": {
-    "api/index.js": {
-      "maxDuration": 30,
-      "includeFiles": "{server,shared}/**"
+  "services": {
+    "web": {
+      "root": ".",
+      "framework": "vite",
+      "buildCommand": "npm install --include=dev && npm run build",
+      "outputDirectory": "dist"
+    },
+    "api": {
+      "root": ".",
+      "framework": "express",
+      "entrypoint": "server/app.js",
+      "buildCommand": "node -e 0"
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/((?!api/)(?!assets/)[^.]*)", "destination": "/index.html" }
+    { "source": "/api/(.*)", "destination": { "type": "service", "service": "api" } },
+    { "source": "/((?!api/)(?!assets/)[^.]*)", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": { "type": "service", "service": "web" } }
   ],
   "headers": [
     {

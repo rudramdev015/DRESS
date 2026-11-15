@@ -4,3 +4,4 @@ dist
 data
 uploads
 .vercel
+.env.local
