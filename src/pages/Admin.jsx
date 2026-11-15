@@ -26,6 +26,7 @@ const EMPTY = {
   images: [],
   featured: false,
   inStock: true,
+  onRack: true,
 };
 
 export default function Admin() {
@@ -163,7 +164,8 @@ export default function Admin() {
                     <b>{p.name}</b>
                     <span className="muted small">
                       {p.category} · {formatINR(p.price)}
-                      {p.featured ? " · ★ Featured" : ""}
+                      {p.featured ? " · ★ Latest drops" : ""}
+                      {p.onRack !== false ? " · On 3D rack" : ""}
                     </span>
                   </div>
                   <button className={`stock ${p.inStock ? "on" : ""}`} onClick={() => toggleStock(p)}>
@@ -312,7 +314,10 @@ function ProductEditor({ initial, onClose, onSave, onAuthError }) {
                 {uploading ? "Uploading…" : <><PlusIcon /> Add</>}
               </label>
             </div>
-            <small className="muted">No photo? A T-shirt mockup is drawn using the first colour and the print text below.</small>
+            <small className="muted">
+              Tip for the 3D rack: use a straight front photo of the printed tee, laid flat on a plain background. No photo? A
+              mockup is drawn from the colour and print text below.
+            </small>
           </div>
 
           <label className="field">
@@ -399,7 +404,8 @@ function ProductEditor({ initial, onClose, onSave, onAuthError }) {
           </div>
 
           <div className="checks">
-            <label><input type="checkbox" checked={p.featured} onChange={set("featured")} /> Show on home page</label>
+            <label><input type="checkbox" checked={p.featured} onChange={set("featured")} /> Show in Latest drops</label>
+            <label><input type="checkbox" checked={p.onRack !== false} onChange={set("onRack")} /> Hang on 3D rack</label>
             <label><input type="checkbox" checked={p.inStock} onChange={set("inStock")} /> In stock</label>
           </div>
           {error && <p className="error">{error}</p>}

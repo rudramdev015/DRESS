@@ -179,8 +179,8 @@ export const seedProducts = [
 ];
 
 export const defaultSettings = {
-  whatsapp: (process.env.WHATSAPP_NUMBER || "").replace(/\D/g, ""),
-  phone: "",
+  whatsapp: (process.env.WHATSAPP_NUMBER || "919358424592").replace(/\D/g, ""),
+  phone: "+91 93584 24592",
   email: "",
   address: "Jodhpur, Rajasthan, India",
   instagram: "",

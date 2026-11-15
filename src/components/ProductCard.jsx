@@ -29,6 +29,7 @@ export default function ProductCard({ product }) {
         <ProductVisual product={product} />
         {product.tag && <span className="chip chip-tag">{product.tag}</span>}
         {!product.inStock && <span className="chip chip-out">Sold out</span>}
+        {product.inStock && off > 0 && <span className="sale-pill card-sale">Sale</span>}
         <button className="card-wa" onClick={quickOrder} aria-label={`Order ${product.name} on WhatsApp`}>
           <WhatsAppIcon width={18} height={18} />
         </button>

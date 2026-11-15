@@ -32,8 +32,19 @@ Change both in the `.env` file, then restart the server.
 
 From the admin panel you can:
 - add, edit and delete tees (photos, price, MRP, colours, sizes, badge, featured, in stock)
-- set your **WhatsApp number** in **Settings** (do this first, or orders can't reach you)
+- change the **WhatsApp number** in **Settings** (orders go to **+91 93584 24592** by default)
 - change the phone, email, address, Instagram link and top announcement bar
+
+## 3D hanger rack (home page)
+
+Your printed tees hang on a 3D clothes rail. Customers swipe through them, tap one to open it, or buy on WhatsApp.
+
+To put a printed tee on the rack:
+1. Admin → **Add product**.
+2. Upload a **straight front photo** of the tee (laid flat on a plain background looks best).
+3. Keep **Hang on 3D rack** ticked, then save. It appears on the rack straight away.
+
+Untick **Hang on 3D rack** to take a tee off the rack (it stays in the shop). Sold-out tees are hidden from the rack.
 
 ## How customers order
 

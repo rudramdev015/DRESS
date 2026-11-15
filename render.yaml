@@ -1,6 +1,6 @@
 # One-click deploy on Render (https://render.com):
 # New → Blueprint → connect this GitHub repo. Render reads this file.
-# You'll be asked for ADMIN_PASSWORD and WHATSAPP_NUMBER during setup.
+# You'll be asked for ADMIN_PASSWORD during setup. Orders go to WhatsApp +91 93584 24592.
 services:
   - type: web
     name: trade-world
@@ -17,7 +17,7 @@ services:
       - key: ADMIN_PASSWORD
         sync: false
       - key: WHATSAPP_NUMBER
-        sync: false
+        value: "919358424592"
       - key: JWT_SECRET
         generateValue: true
       - key: DATA_DIR

@@ -2,6 +2,7 @@ import { Component, Suspense, lazy, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import ProductCard from "../components/ProductCard.jsx";
 import TeeMockup from "../components/TeeMockup.jsx";
+import HangerRack from "../components/HangerRack.jsx";
 import { Reels, Reviews, TrustStrip } from "../components/Showcase.jsx";
 import { ArrowIcon, SparkIcon, WhatsAppIcon } from "../components/Icons.jsx";
 import { CATEGORIES } from "../lib/api.js";
@@ -188,6 +189,9 @@ export default function Home() {
         </div>
       </div>
 
+      {/* 3D HANGER RACK — printed tees, added from Admin */}
+      <HangerRack products={products} />
+
       {/* CATEGORIES */}
       <section className="section wrap">
         <div className="section-head">
@@ -292,24 +296,38 @@ export default function Home() {
 
       {/* BULK CTA */}
       <section className="section wrap">
-        <div className="cta-band reveal">
-          <div>
+        <div className="cta-band bulk reveal">
+          <div className="bulk-copy">
             <span className="brush cta-brush">Bulk orders</span>
             <h2 className="display-sm">10+ tees for your team, college or brand?</h2>
             <p>Send us your quantity and design. We'll reply on WhatsApp with bulk pricing and a mockup.</p>
+            <ul className="bulk-points">
+              <li>From 10 pieces</li>
+              <li>Mockup before we print</li>
+              <li>Better price per piece</li>
+            </ul>
+            <div className="cta-actions">
+              <button
+                className="btn btn-light btn-lg"
+                onClick={() => openWhatsApp(settings.whatsapp, quickMessage("I need a bulk T-shirt printing quote."))}
+              >
+                <WhatsAppIcon /> Get bulk quote
+              </button>
+              <Link to="/custom" className="btn btn-outline-light btn-lg">
+                Fill the custom form
+              </Link>
+              {settings.mapsUrl && (
+                <a className="btn btn-outline-light btn-lg" href={settings.mapsUrl} target="_blank" rel="noreferrer">
+                  Visit our shop
+                </a>
+              )}
+            </div>
           </div>
-          <div className="cta-actions">
-            <button
-              className="btn btn-light btn-lg"
-              onClick={() => openWhatsApp(settings.whatsapp, quickMessage("I need a bulk T-shirt printing quote."))}
-            >
-              <WhatsAppIcon /> Get bulk quote
-            </button>
-            {settings.mapsUrl && (
-              <a className="btn btn-outline-light btn-lg" href={settings.mapsUrl} target="_blank" rel="noreferrer">
-                Visit our shop
-              </a>
-            )}
+          <div className="bulk-art" aria-hidden="true">
+            <div className="bulk-tee t1"><TeeMockup color="#f4f1ea" graphic="YOUR BRAND" sub="TEAM 2026" /></div>
+            <div className="bulk-tee t2"><TeeMockup color="#111111" graphic="YOUR TEAM" sub="JODHPUR" /></div>
+            <div className="bulk-tee t3"><TeeMockup color="#111111" graphic="COLLEGE FEST" sub="CREW" /></div>
+            <span className="bulk-tag">× 50 pcs</span>
           </div>
         </div>
       </section>

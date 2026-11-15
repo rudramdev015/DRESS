@@ -107,6 +107,7 @@ function cleanProduct(body) {
       ? body.images.map((u) => str(u, 300)).filter((u) => u.startsWith("/uploads/") || /^https?:\/\//.test(u)).slice(0, 8)
       : [],
     featured: Boolean(body.featured),
+    onRack: body.onRack !== false, // shown on the home page 3D hanger rack (on by default)
     inStock: body.inStock !== false,
   };
 }
